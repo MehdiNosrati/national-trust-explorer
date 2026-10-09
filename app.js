@@ -206,26 +206,43 @@ function updateOriginOnMap() {
     </div>
   `);
 
-  // 15, 30, and 60 mile range circles (converted to meters)
-  const ranges = [
-    { miles: 15, color: "#10b981", opacity: 0.25 },
-    { miles: 30, color: "#f59e0b", opacity: 0.18 },
-    { miles: 60, color: "#ef4444", opacity: 0.12 }
-  ];
+  // Dynamic Range Circle matching user's selected distance filter
+  updateDynamicRangeCircle();
+}
 
-  ranges.forEach(r => {
-    const meters = r.miles * 1609.34;
+function updateDynamicRangeCircle() {
+  if (!map) return;
+
+  const maxDistance = parseFloat(distanceSlider ? distanceSlider.value : 350);
+
+  // If "All UK" (>= 350 mi), remove range circle
+  if (isNaN(maxDistance) || maxDistance >= 350) {
+    rangeCircles.forEach(c => map.removeLayer(c));
+    rangeCircles = [];
+    return;
+  }
+
+  const meters = maxDistance * 1609.34;
+
+  if (rangeCircles.length > 0 && rangeCircles[0]) {
+    rangeCircles[0].setLatLng([currentOrigin.lat, currentOrigin.lon]);
+    rangeCircles[0].setRadius(meters);
+  } else {
+    rangeCircles.forEach(c => map.removeLayer(c));
+    rangeCircles = [];
+
     const circle = L.circle([currentOrigin.lat, currentOrigin.lon], {
       radius: meters,
-      color: r.color,
-      weight: 1.5,
-      fillColor: r.color,
-      fillOpacity: r.opacity,
+      color: "#007A3B",
+      weight: 2,
+      fillColor: "#007A3B",
+      fillOpacity: 0.08,
       interactive: false,
-      dashArray: "4, 6"
+      dashArray: "6, 8"
     }).addTo(map);
+
     rangeCircles.push(circle);
-  });
+  }
 }
 
 function createCustomPin(cat) {
@@ -363,6 +380,10 @@ function renderCards() {
 function onCardClicked(site) {
   highlightCard(site.id || site.slug);
   if (site.latitude && site.longitude && map) {
+    // If on mobile and in list view, auto-switch to map view to display this pin
+    if (window.innerWidth <= 768 && !isMobileMap) {
+      toggleMobileView();
+    }
     const marker = markerMap.get(site.id || site.slug);
     if (marker) {
       clusterGroup.zoomToShowLayer(marker, () => {
@@ -454,6 +475,7 @@ function applyFilters() {
 
   renderCards();
   updateMapMarkers();
+  updateDynamicRangeCircle();
   updateActiveFiltersBadge();
   syncCategoryChips(selectedCat);
 
@@ -639,23 +661,26 @@ async function handleCustomOriginSearch() {
   }
 }
 
-// Mobile Floating Switcher
+// Mobile Floating & Header View Switcher
 function toggleMobileView() {
   isMobileMap = !isMobileMap;
   const icon = document.getElementById("mobile-view-icon");
   const label = document.getElementById("mobile-view-label");
+  const headerBtn = document.getElementById("mobile-header-view-toggle");
 
   if (isMobileMap) {
     document.body.classList.add("mobile-map-active");
     if (icon) icon.textContent = "📋";
     if (label) label.textContent = `View List (${filteredSites.length})`;
-    setTimeout(() => {
-      if (map) map.invalidateSize();
-    }, 200);
+    if (headerBtn) headerBtn.textContent = "📋 List";
+    setTimeout(() => { if (map) map.invalidateSize(); }, 50);
+    setTimeout(() => { if (map) map.invalidateSize(); }, 250);
   } else {
     document.body.classList.remove("mobile-map-active");
     if (icon) icon.textContent = "🗺️";
     if (label) label.textContent = "View Map";
+    if (headerBtn) headerBtn.textContent = "🗺️ Map";
+    setTimeout(() => { if (map) map.invalidateSize(); }, 100);
   }
 }
 
@@ -736,6 +761,12 @@ function setupEventListeners() {
     mobileToggle.addEventListener("click", toggleMobileView);
   }
 
+  // Mobile Header View Switcher Button
+  const mobileHeaderToggle = document.getElementById("mobile-header-view-toggle");
+  if (mobileHeaderToggle) {
+    mobileHeaderToggle.addEventListener("click", toggleMobileView);
+  }
+
   // Distance Slider
   distanceSlider.addEventListener("input", (e) => {
     const val = parseFloat(e.target.value);
@@ -746,6 +777,7 @@ function setupEventListeners() {
     } else {
       distSliderVal.textContent = `Under ${val} mi`;
     }
+    updateDynamicRangeCircle();
     applyFilters();
   });
 
@@ -762,6 +794,7 @@ function setupEventListeners() {
         distanceSlider.value = dist;
         distSliderVal.textContent = `Under ${dist} mi`;
       }
+      updateDynamicRangeCircle();
       applyFilters();
     });
   });
