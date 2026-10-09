@@ -3,9 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>National Trust Explorer | 670+ UK Sites, Interactive Map & Driving Times</title>
-  <link rel="icon" href="https://static.nationaltrust.org.uk/nt-front-end/images/favicon-32x32.png" type="image/png">
   
+  <!-- Primary SEO Meta Tags -->
+  <title>National Trust Map & Explorer | 670+ UK Places, Gardens & Castles Near You</title>
+  <meta name="description" content="Interactive UK map of 678 National Trust properties, historic houses, gardens, castles, and coastlines. Calculate live road driving distances, travel times from your location, and visitor guidelines.">
+  <meta name="keywords" content="national trust map, national trust near me, national trust properties, national trust gardens, national trust castles, national trust days out, uk historic houses, national trust driving times">
+  <meta name="author" content="Mehdi Nosrati">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <link rel="canonical" href="https://mahdins.dev/national-trust-explorer/">
+  
+  <!-- Open Graph / Facebook / LinkedIn / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mahdins.dev/national-trust-explorer/">
+  <meta property="og:site_name" content="National Trust Explorer">
+  <meta property="og:title" content="National Trust Map & Explorer | 670+ UK Places Near You">
+  <meta property="og:description" content="Interactive map of 678 National Trust sites across England, Wales & Northern Ireland. Calculate live driving distances, travel times, and visit guidelines.">
+  <meta property="og:image" content="https://mahdins.dev/national-trust-explorer/og-image.png">
+  <meta property="og:image:secure_url" content="https://mahdins.dev/national-trust-explorer/og-image.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="National Trust Explorer UK Map Preview">
+  <meta property="og:locale" content="en_GB">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://mahdins.dev/national-trust-explorer/">
+  <meta name="twitter:title" content="National Trust Map & Explorer | 670+ UK Places Near You">
+  <meta name="twitter:description" content="Interactive UK map with 678 National Trust properties. Calculate live driving distances, travel times, and visit guidelines.">
+  <meta name="twitter:image" content="https://mahdins.dev/national-trust-explorer/og-image.png">
+
+  <!-- Resource Hints & Favicon -->
+  <link rel="icon" href="https://static.nationaltrust.org.uk/nt-front-end/images/favicon-32x32.png" type="image/png">
+  <link rel="preconnect" href="https://tile.openstreetmap.org">
+  <link rel="dns-prefetch" href="https://tile.openstreetmap.org">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="dns-prefetch" href="https://unpkg.com">
+  <link rel="preconnect" href="https://static.cloudflareinsights.com">
+
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <!-- Leaflet MarkerCluster CSS -->
@@ -14,6 +49,174 @@
   
   <!-- App Stylesheet -->
   <link rel="stylesheet" href="styles.css">
+
+  <!-- JSON-LD Structured Data: WebApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "National Trust Explorer & Map",
+    "url": "https://mahdins.dev/national-trust-explorer/",
+    "applicationCategory": "TravelApplication",
+    "operatingSystem": "All",
+    "description": "Interactive map and visitor directory of 678 National Trust properties, historic houses, castles, and gardens across the UK with live road driving distances and travel times.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "GBP"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Mehdi Nosrati",
+      "url": "https://mahdins.dev"
+    }
+  }
+  </script>
+
+  <!-- JSON-LD Structured Data: Top Attractions Showcase -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Featured National Trust Properties",
+    "description": "Top visited National Trust houses, castles, and historic estates across the UK",
+    "numberOfItems": 6,
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "item": {
+          "@type": "TouristAttraction",
+          "name": "Wimpole Estate",
+          "description": "Impressive 17th-century mansion, parkland, and working home farm in Cambridgeshire.",
+          "url": "https://www.nationaltrust.org.uk/visit/cambridgeshire/wimpole-estate",
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 52.1408,
+            "longitude": -0.0464
+          }
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "item": {
+          "@type": "TouristAttraction",
+          "name": "Fountains Abbey and Studley Royal Water Garden",
+          "description": "UNESCO World Heritage Site with dramatic ruined 12th-century Cistercian abbey and Georgian water garden in Yorkshire.",
+          "url": "https://www.nationaltrust.org.uk/visit/yorkshire/fountains-abbey-and-studley-royal-water-garden",
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 54.1105,
+            "longitude": -1.5836
+          }
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "item": {
+          "@type": "TouristAttraction",
+          "name": "Cliveden",
+          "description": "Magnificent estate with panoramic views over the River Thames and glorious formal gardens in Buckinghamshire.",
+          "url": "https://www.nationaltrust.org.uk/visit/oxfordshire-buckinghamshire-berkshire/cliveden",
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 51.5583,
+            "longitude": -0.6883
+          }
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "item": {
+          "@type": "TouristAttraction",
+          "name": "Giant's Causeway",
+          "description": "Flanked by the wild North Atlantic Ocean, a world-famous geological marvel of 40,000 interlocking basalt columns.",
+          "url": "https://www.nationaltrust.org.uk/visit/northern-ireland/giants-causeway",
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 55.2408,
+            "longitude": -6.5116
+          }
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 5,
+        "item": {
+          "@type": "TouristAttraction",
+          "name": "Stourhead",
+          "description": "World-famous 18th-century landscape garden with classical temples, grottoes, and exotic trees in Wiltshire.",
+          "url": "https://www.nationaltrust.org.uk/visit/wiltshire/stourhead",
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 51.1075,
+            "longitude": -2.3186
+          }
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 6,
+        "item": {
+          "@type": "TouristAttraction",
+          "name": "Chartwell",
+          "description": "The much-loved family home of Sir Winston Churchill with historic rooms and gardens in Kent.",
+          "url": "https://www.nationaltrust.org.uk/visit/kent/chartwell",
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 51.2444,
+            "longitude": 0.0833
+          }
+        }
+      }
+    ]
+  }
+  </script>
+
+  <!-- JSON-LD Structured Data: FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How many National Trust properties are in this directory?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This interactive explorer indexes all 678 National Trust visitor properties, estates, gardens, and open spaces across England, Wales, and Northern Ireland, powered by official National Trust GIS data."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I find National Trust places near me?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Open the explorer and tap 'Change' next to Origin in the top bar. Choose 'Use My Current GPS Location' or enter your UK town or postcode. The app recalculates road driving distances and travel times, sorting places from nearest to furthest."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How are driving times and distances calculated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Driving distances account for typical UK road network routing factors (1.25x straight-line distance factor with tiered highway and rural speed modelling). Every card also includes a 1-click turn-by-turn navigation button to Google Maps."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are typical National Trust opening times?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Gardens and parklands typically open from 10:00 AM to 5:00 PM, historic houses from 11:00 AM to 4:00 PM, and countryside or coastal areas are accessible dawn-to-dusk. Tap 'Details' on any place card to check live opening schedules."
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
@@ -136,8 +339,85 @@
         <span id="results-sort-text">Sorted by nearest to origin</span>
       </div>
       <div class="cards-grid" id="cards-grid">
-        <!-- Rendered dynamically -->
+        <!-- Pre-rendered SEO Fallback Cards (replaced dynamically by app.js on load) -->
+        <article class="site-card fallback-card">
+          <div class="card-top">
+            <div class="badges-group">
+              <span class="badge badge-category">🏛️ Historic House &amp; Estate</span>
+              <span class="badge badge-region">East of England</span>
+            </div>
+            <div class="card-drive-badge">🚗 Cambridgeshire</div>
+          </div>
+          <h2 class="card-title">Wimpole Estate</h2>
+          <p class="card-desc">Impressive 17th-century mansion, glorious landscaped parkland, and working home farm.</p>
+          <div class="card-footer">
+            <a href="https://www.nationaltrust.org.uk/visit/cambridgeshire/wimpole-estate" target="_blank" rel="noopener noreferrer" class="btn-card btn-outline">Official Guide &rarr;</a>
+          </div>
+        </article>
+
+        <article class="site-card fallback-card">
+          <div class="card-top">
+            <div class="badges-group">
+              <span class="badge badge-category">⛪ Abbey &amp; Historic Site</span>
+              <span class="badge badge-region">Yorkshire</span>
+            </div>
+            <div class="card-drive-badge">🚗 North Yorkshire</div>
+          </div>
+          <h2 class="card-title">Fountains Abbey and Studley Royal Water Garden</h2>
+          <p class="card-desc">UNESCO World Heritage Site with dramatic ruined 12th-century Cistercian abbey and Georgian water garden.</p>
+          <div class="card-footer">
+            <a href="https://www.nationaltrust.org.uk/visit/yorkshire/fountains-abbey-and-studley-royal-water-garden" target="_blank" rel="noopener noreferrer" class="btn-card btn-outline">Official Guide &rarr;</a>
+          </div>
+        </article>
+
+        <article class="site-card fallback-card">
+          <div class="card-top">
+            <div class="badges-group">
+              <span class="badge badge-category">🌸 Gardens &amp; Parkland</span>
+              <span class="badge badge-region">London &amp; South East</span>
+            </div>
+            <div class="card-drive-badge">🚗 Buckinghamshire</div>
+          </div>
+          <h2 class="card-title">Cliveden</h2>
+          <p class="card-desc">Magnificent estate with panoramic views over the River Thames and glorious formal gardens.</p>
+          <div class="card-footer">
+            <a href="https://www.nationaltrust.org.uk/visit/oxfordshire-buckinghamshire-berkshire/cliveden" target="_blank" rel="noopener noreferrer" class="btn-card btn-outline">Official Guide &rarr;</a>
+          </div>
+        </article>
       </div>
+
+      <!-- SEO FAQ & Visiting Guide Accordion -->
+      <section class="seo-faq-section" id="faq-section" aria-label="Frequently Asked Questions">
+        <h3 class="seo-faq-heading">Frequently Asked Questions &amp; Visiting Guide</h3>
+        
+        <details class="faq-item" open>
+          <summary class="faq-question">How many National Trust properties are in this directory?</summary>
+          <div class="faq-answer">
+            <p>This interactive explorer indexes all 678 National Trust visitor properties, estates, historic houses, gardens, castles, and open coastlines across England, Wales, and Northern Ireland, powered by official National Trust GIS data.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question">How do I find National Trust places near me?</summary>
+          <div class="faq-answer">
+            <p>Tap <strong>Change</strong> next to Origin in the top bar to choose <em>Use My Current GPS Location</em> or enter your UK town or postcode. The app recalculates road driving distances and travel times, sorting places from nearest to furthest.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question">How are driving times and distances calculated?</summary>
+          <div class="faq-answer">
+            <p>Driving distances account for typical UK road network routing factors (1.25x straight-line distance factor with tiered motorway and rural speed modelling). Every card also includes a 1-click turn-by-turn navigation button to Google Maps.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-question">What are typical National Trust opening times?</summary>
+          <div class="faq-answer">
+            <p>Gardens and parklands typically open from 10:00 AM to 5:00 PM, historic houses from 11:00 AM to 4:00 PM, and countryside or coastal areas are accessible dawn-to-dusk. Tap <strong>Details</strong> on any place card to check live opening schedules.</p>
+          </div>
+        </details>
+      </section>
     </div>
 
     <!-- Map Pane -->
