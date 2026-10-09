@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>National Trust Explorer | 670+ Sites & Driving Times from Stevenage</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>National Trust Explorer | 670+ UK Sites, Interactive Map & Driving Times</title>
   <link rel="icon" href="https://static.nationaltrust.org.uk/nt-front-end/images/favicon-32x32.png" type="image/png">
   
   <!-- Leaflet CSS -->
@@ -26,7 +26,7 @@
           <span class="brand-chip-title">National Trust Explorer</span>
         </div>
         <div class="origin-badge">
-          <span>📍 Origin: <strong id="origin-name-display">Stevenage, Herts</strong></span>
+          <span>📍 Origin: <strong id="origin-name-display">Central London</strong></span>
           <button id="change-origin-btn" class="origin-btn" title="Change starting location">Change</button>
         </div>
       </div>
@@ -49,54 +49,79 @@
   <!-- Filter Toolbar -->
   <section class="filter-toolbar">
     <div class="toolbar-inner">
-      <!-- Search & Primary Selects -->
-      <div class="filter-row-primary">
+      <!-- Search & Filter Toggle Bar -->
+      <div class="filter-primary-bar">
         <div class="search-box">
           <span class="search-icon">🔍</span>
-          <input type="text" id="search-input" placeholder="Search site name, region, keyword, castle..." autocomplete="off">
+          <input type="text" id="search-input" placeholder="Search 670+ places, castles, regions..." autocomplete="off">
           <button id="clear-search" class="clear-search-btn">✕</button>
         </div>
-        <div>
-          <select id="region-select" class="select-control">
-            <option value="">All Regions (UK-wide)</option>
-          </select>
-        </div>
-        <div>
-          <select id="category-select" class="select-control">
-            <option value="">All Categories</option>
-            <option value="Historic House & Estate">🏛️ Historic Houses & Estates</option>
-            <option value="Castle & Fort">🏰 Castles & Forts</option>
-            <option value="Gardens & Parkland">🌸 Gardens & Parkland</option>
-            <option value="Coast & Beaches">🌊 Coast & Beaches</option>
-            <option value="Countryside & Nature Reserve">🌲 Countryside & Reserves</option>
-            <option value="Abbey & Historic Site">⛪ Abbeys & Historic Sites</option>
-            <option value="Mill & Industrial Heritage">⚙️ Industrial & Mills</option>
-          </select>
-        </div>
-        <div>
-          <select id="sort-select" class="select-control">
-            <option value="nearest">🚗 Nearest to Stevenage</option>
-            <option value="time">⏱️ Shortest Travel Time</option>
-            <option value="name_asc">🔤 Name (A → Z)</option>
-            <option value="name_desc">🔤 Name (Z → A)</option>
-            <option value="region">📍 By Region</option>
-          </select>
-        </div>
+        <button id="toggle-filters-btn" class="filters-toggle-btn" title="Toggle detailed filters">
+          <span>⚙️ Filters</span>
+          <span id="active-filters-badge" class="filter-count-badge"></span>
+        </button>
       </div>
 
-      <!-- Distance Presets & Slider -->
-      <div class="distance-row">
-        <span>Max Distance:</span>
-        <div class="distance-presets">
-          <button class="dist-btn" data-dist="15">Under 15 mi</button>
-          <button class="dist-btn" data-dist="30">Under 30 mi</button>
-          <button class="dist-btn" data-dist="60">Under 60 mi</button>
-          <button class="dist-btn" data-dist="100">Under 100 mi</button>
-          <button class="dist-btn active" data-dist="all">All UK</button>
+      <!-- Quick Category Chips (Horizontal Swipeable) -->
+      <div class="category-chips-scroll" id="category-chips">
+        <button class="cat-chip active" data-cat="">All Places</button>
+        <button class="cat-chip" data-cat="Historic House & Estate">🏛️ Houses & Estates</button>
+        <button class="cat-chip" data-cat="Castle & Fort">🏰 Castles</button>
+        <button class="cat-chip" data-cat="Gardens & Parkland">🌸 Gardens</button>
+        <button class="cat-chip" data-cat="Coast & Beaches">🌊 Coast & Beaches</button>
+        <button class="cat-chip" data-cat="Countryside & Nature Reserve">🌲 Countryside</button>
+        <button class="cat-chip" data-cat="Abbey & Historic Site">⛪ Abbeys</button>
+        <button class="cat-chip" data-cat="Mill & Industrial Heritage">⚙️ Industrial</button>
+      </div>
+
+      <!-- Collapsible Detailed Filters (Expanded on desktop, toggled on mobile) -->
+      <div class="collapsible-filters" id="collapsible-filters">
+        <div class="filter-controls-grid">
+          <div>
+            <label class="filter-label" for="region-select">Region:</label>
+            <select id="region-select" class="select-control">
+              <option value="">All Regions (UK-wide)</option>
+            </select>
+          </div>
+          <div>
+            <label class="filter-label" for="category-select">Category:</label>
+            <select id="category-select" class="select-control">
+              <option value="">All Categories</option>
+              <option value="Historic House & Estate">🏛️ Historic Houses & Estates</option>
+              <option value="Castle & Fort">🏰 Castles & Forts</option>
+              <option value="Gardens & Parkland">🌸 Gardens & Parkland</option>
+              <option value="Coast & Beaches">🌊 Coast & Beaches</option>
+              <option value="Countryside & Nature Reserve">🌲 Countryside & Reserves</option>
+              <option value="Abbey & Historic Site">⛪ Abbeys & Historic Sites</option>
+              <option value="Mill & Industrial Heritage">⚙️ Industrial & Mills</option>
+            </select>
+          </div>
+          <div>
+            <label class="filter-label" for="sort-select">Sort by:</label>
+            <select id="sort-select" class="select-control">
+              <option value="nearest">🚗 Nearest to Origin</option>
+              <option value="time">⏱️ Shortest Travel Time</option>
+              <option value="name_asc">🔤 Name (A → Z)</option>
+              <option value="name_desc">🔤 Name (Z → A)</option>
+              <option value="region">📍 By Region</option>
+            </select>
+          </div>
         </div>
-        <div class="distance-slider-wrap">
-          <input type="range" id="distance-slider" min="5" max="350" value="350" step="5">
-          <span class="dist-val-badge" id="dist-slider-val">All UK (350+ mi)</span>
+
+        <!-- Distance Presets & Slider -->
+        <div class="distance-row">
+          <span class="filter-label">Max Distance:</span>
+          <div class="distance-presets">
+            <button class="dist-btn" data-dist="15">Under 15 mi</button>
+            <button class="dist-btn" data-dist="30">Under 30 mi</button>
+            <button class="dist-btn" data-dist="60">Under 60 mi</button>
+            <button class="dist-btn" data-dist="100">Under 100 mi</button>
+            <button class="dist-btn active" data-dist="all">All UK</button>
+          </div>
+          <div class="distance-slider-wrap">
+            <input type="range" id="distance-slider" min="5" max="350" value="350" step="5">
+            <span class="dist-val-badge" id="dist-slider-val">All UK (350+ mi)</span>
+          </div>
         </div>
       </div>
     </div>
@@ -108,7 +133,7 @@
     <div class="list-pane">
       <div class="results-meta">
         <span id="results-count-text">Showing 678 National Trust places</span>
-        <span id="results-sort-text">Sorted by nearest to Stevenage</span>
+        <span id="results-sort-text">Sorted by nearest to origin</span>
       </div>
       <div class="cards-grid" id="cards-grid">
         <!-- Rendered dynamically -->
@@ -196,38 +221,56 @@
 
   <!-- Origin Location Modal -->
   <div class="modal-overlay" id="origin-modal">
-    <div class="modal-card" style="max-width: 480px;">
+    <div class="modal-card origin-modal-card">
       <div class="modal-header">
-        <h3 style="font-family: var(--font-serif); font-size: 1.25rem;">Change Starting Location</h3>
+        <h3 style="font-family: var(--font-serif); font-size: 1.25rem;">📍 Change Departure Location</h3>
         <button class="close-modal-btn" id="close-origin-modal">&times;</button>
       </div>
       <div class="modal-body">
-        <p style="font-size: 0.88rem; color: var(--text-secondary);">
-          Choose your departure town or use your current location to update driving distances and travel times.
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 0.85rem;">
+          Select your departure city, use your current GPS location, or enter any UK town or postcode to calculate live driving distances.
         </p>
-        <div style="display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.5rem;">
-          <button class="btn-card btn-outline origin-choice-btn" data-lat="51.9038" data-lon="-0.1974" data-name="Stevenage, Herts">
-            📍 Stevenage, Hertfordshire (Default)
-          </button>
-          <button class="btn-card btn-secondary origin-choice-btn" data-lat="51.5074" data-lon="-0.1278" data-name="Central London">
-            📍 Central London
-          </button>
-          <button class="btn-card btn-secondary origin-choice-btn" data-lat="52.2053" data-lon="0.1218" data-name="Cambridge">
-            📍 Cambridge
-          </button>
-          <button class="btn-card btn-secondary origin-choice-btn" data-lat="51.7520" data-lon="-1.2577" data-name="Oxford">
-            📍 Oxford
-          </button>
-          <button class="btn-card btn-secondary origin-choice-btn" data-lat="52.4862" data-lon="-1.8904" data-name="Birmingham">
-            📍 Birmingham
-          </button>
-          <button class="btn-card btn-secondary" id="geolocate-btn" style="margin-top: 0.5rem;">
-            🎯 Use My Current GPS Location
-          </button>
+
+        <!-- Custom Search Row -->
+        <div class="custom-origin-box">
+          <label class="filter-label" for="custom-origin-input">Search UK Town, City, or Postcode:</label>
+          <div class="custom-origin-input-row">
+            <input type="text" id="custom-origin-input" placeholder="e.g. York, Bath, St Albans, EH1...">
+            <button id="search-origin-btn" class="origin-btn search-origin-action">Find</button>
+          </div>
+          <div id="origin-search-feedback" class="search-feedback" style="display: none;"></div>
+        </div>
+
+        <!-- GPS Button -->
+        <button class="btn-card btn-outline origin-gps-btn" id="geolocate-btn">
+          🎯 Use My Current GPS Location
+        </button>
+
+        <!-- Popular Locations Grid -->
+        <div class="origin-presets-label">Popular Departure Locations:</div>
+        <div class="origin-presets-grid">
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="51.5074" data-lon="-0.1278" data-name="Central London">📍 London</button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="52.4862" data-lon="-1.8904" data-name="Birmingham">📍 Birmingham</button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="53.4808" data-lon="-2.2426" data-name="Manchester">📍 Manchester</button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="53.8008" data-lon="-1.5491" data-name="Leeds">📍 Leeds</button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="51.4545" data-lon="-2.5879" data-name="Bristol">📍 Bristol</button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="52.2053" data-lon="0.1218" data-name="Cambridge">📍 Cambridge</button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="51.7520" data-lon="-1.2577" data-name="Oxford">📍 Oxford</button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="51.9038" data-lon="-0.1974" data-name="Stevenage, Herts">📍 Stevenage</button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="55.9533" data-lon="-3.1883" data-name="Edinburgh">📍 Edinburgh</button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="51.4816" data-lon="-3.1791" data-name="Cardiff">📍 Cardiff</button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="54.9783" data-lon="-1.6178" data-name="Newcastle">📍 Newcastle</button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="50.9097" data-lon="-1.4044" data-name="Southampton">📍 Southampton</button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Floating View Toggle for Mobile -->
+  <button class="mobile-floating-view-btn" id="mobile-view-toggle" title="Toggle between map and list">
+    <span id="mobile-view-icon">🗺️</span>
+    <span id="mobile-view-label">View Map</span>
+  </button>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>

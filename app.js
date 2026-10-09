@@ -2,14 +2,34 @@
  * National Trust Explorer Application Logic
  */
 
+// LocalStorage Persistence Key
+const STORAGE_KEY_ORIGIN = "nt_explorer_origin";
+
+function loadSavedOrigin() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_ORIGIN);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.name && typeof parsed.lat === "number" && typeof parsed.lon === "number") {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn("Could not read saved origin from localStorage:", e);
+  }
+  // Generalized UK default: Central London
+  return {
+    name: "Central London",
+    lat: 51.5074,
+    lon: -0.1278
+  };
+}
+
 // State
 let allSites = [];
 let filteredSites = [];
-let currentOrigin = {
-  name: "Stevenage, Herts",
-  lat: 51.9038,
-  lon: -0.1974
-};
+let currentOrigin = loadSavedOrigin();
+let isMobileMap = false;
 
 // Map objects
 let map = null;
@@ -434,6 +454,14 @@ function applyFilters() {
 
   renderCards();
   updateMapMarkers();
+  updateActiveFiltersBadge();
+  syncCategoryChips(selectedCat);
+
+  // Update mobile floating toggle label if map is active
+  if (isMobileMap) {
+    const label = document.getElementById("mobile-view-label");
+    if (label) label.textContent = `View List (${filteredSites.length})`;
+  }
 }
 
 function resetFilters() {
@@ -513,13 +541,161 @@ function closeOriginModal() {
   originModal.classList.remove("active");
 }
 
+function updateSortOptionLabels() {
+  const opt = document.querySelector('#sort-select option[value="nearest"]');
+  if (opt) {
+    opt.textContent = `🚗 Nearest to ${currentOrigin.name}`;
+  }
+}
+
 function setOrigin(name, lat, lon) {
   currentOrigin = { name, lat, lon };
+  try {
+    localStorage.setItem(STORAGE_KEY_ORIGIN, JSON.stringify(currentOrigin));
+  } catch (e) {
+    console.warn("Could not save origin to localStorage:", e);
+  }
   originDisplay.textContent = name;
+  updateSortOptionLabels();
   recomputeDistances();
-  updateOriginOnMap();
+  if (map) updateOriginOnMap();
   applyFilters();
   closeOriginModal();
+}
+
+// Common UK Places Offline Dictionary
+const COMMON_UK_PLACES = {
+  "london": { name: "Central London", lat: 51.5074, lon: -0.1278 },
+  "central london": { name: "Central London", lat: 51.5074, lon: -0.1278 },
+  "stevenage": { name: "Stevenage, Herts", lat: 51.9038, lon: -0.1974 },
+  "birmingham": { name: "Birmingham", lat: 52.4862, lon: -1.8904 },
+  "manchester": { name: "Manchester", lat: 53.4808, lon: -2.2426 },
+  "leeds": { name: "Leeds", lat: 53.8008, lon: -1.5491 },
+  "bristol": { name: "Bristol", lat: 51.4545, lon: -2.5879 },
+  "cambridge": { name: "Cambridge", lat: 52.2053, lon: 0.1218 },
+  "oxford": { name: "Oxford", lat: 51.7520, lon: -1.2577 },
+  "edinburgh": { name: "Edinburgh", lat: 55.9533, lon: -3.1883 },
+  "cardiff": { name: "Cardiff", lat: 51.4816, lon: -3.1791 },
+  "glasgow": { name: "Glasgow", lat: 55.8642, lon: -4.2518 },
+  "newcastle": { name: "Newcastle", lat: 54.9783, lon: -1.6178 },
+  "liverpool": { name: "Liverpool", lat: 53.4084, lon: -2.9916 },
+  "sheffield": { name: "Sheffield", lat: 53.3811, lon: -1.4701 },
+  "nottingham": { name: "Nottingham", lat: 52.9548, lon: -1.1581 },
+  "bath": { name: "Bath", lat: 51.3811, lon: -2.3590 },
+  "york": { name: "York", lat: 53.9600, lon: -1.0873 },
+  "norwich": { name: "Norwich", lat: 52.6309, lon: 1.2974 },
+  "exeter": { name: "Exeter", lat: 50.7184, lon: -3.5339 },
+  "plymouth": { name: "Plymouth", lat: 50.3755, lon: -4.1427 },
+  "brighton": { name: "Brighton", lat: 50.8225, lon: -0.1372 },
+  "southampton": { name: "Southampton", lat: 50.9097, lon: -1.4044 },
+  "st albans": { name: "St Albans", lat: 51.7527, lon: -0.3394 },
+  "luton": { name: "Luton", lat: 51.8787, lon: -0.4200 },
+  "watford": { name: "Watford", lat: 51.6565, lon: -0.3903 },
+  "milton keynes": { name: "Milton Keynes", lat: 52.0406, lon: -0.7594 }
+};
+
+async function handleCustomOriginSearch() {
+  const input = document.getElementById("custom-origin-input");
+  const feedback = document.getElementById("origin-search-feedback");
+  if (!input || !feedback) return;
+  const query = input.value.trim();
+  if (!query) {
+    feedback.textContent = "Please enter a town, city, or postcode.";
+    feedback.className = "search-feedback error";
+    return;
+  }
+
+  feedback.textContent = `Searching for "${query}"...`;
+  feedback.className = "search-feedback loading";
+
+  const key = query.toLowerCase();
+  if (COMMON_UK_PLACES[key]) {
+    const loc = COMMON_UK_PLACES[key];
+    setOrigin(loc.name, loc.lat, loc.lon);
+    input.value = "";
+    feedback.style.display = "none";
+    return;
+  }
+
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=gb&limit=1&q=${encodeURIComponent(query)}`;
+    const res = await fetch(url, { headers: { "Accept": "application/json" } });
+    const data = await res.json();
+    if (data && data.length > 0) {
+      const match = data[0];
+      const lat = parseFloat(match.lat);
+      const lon = parseFloat(match.lon);
+      const displayName = match.display_name.split(",")[0] || query;
+      setOrigin(displayName, lat, lon);
+      input.value = "";
+      feedback.style.display = "none";
+    } else {
+      feedback.textContent = `Could not find "${query}". Please check spelling or select a city below.`;
+      feedback.className = "search-feedback error";
+    }
+  } catch (err) {
+    feedback.textContent = "Search timed out. Please choose a nearby city below.";
+    feedback.className = "search-feedback error";
+  }
+}
+
+// Mobile Floating Switcher
+function toggleMobileView() {
+  isMobileMap = !isMobileMap;
+  const icon = document.getElementById("mobile-view-icon");
+  const label = document.getElementById("mobile-view-label");
+
+  if (isMobileMap) {
+    document.body.classList.add("mobile-map-active");
+    if (icon) icon.textContent = "📋";
+    if (label) label.textContent = `View List (${filteredSites.length})`;
+    setTimeout(() => {
+      if (map) map.invalidateSize();
+    }, 200);
+  } else {
+    document.body.classList.remove("mobile-map-active");
+    if (icon) icon.textContent = "🗺️";
+    if (label) label.textContent = "View Map";
+  }
+}
+
+function updateActiveFiltersBadge() {
+  const query = searchInput.value.trim();
+  const selectedRegion = regionSelect.value;
+  const selectedCat = categorySelect.value;
+  const maxDistance = parseFloat(distanceSlider.value);
+  const sortBy = sortSelect.value;
+
+  let count = 0;
+  if (query) count++;
+  if (selectedRegion) count++;
+  if (selectedCat) count++;
+  if (maxDistance < 350) count++;
+  if (sortBy !== "nearest") count++;
+
+  const toggleBtn = document.getElementById("toggle-filters-btn");
+  const badge = document.getElementById("active-filters-badge");
+
+  if (toggleBtn && badge) {
+    if (count > 0) {
+      toggleBtn.classList.add("has-active");
+      badge.textContent = `(${count})`;
+    } else {
+      toggleBtn.classList.remove("has-active");
+      badge.textContent = "";
+    }
+  }
+}
+
+function syncCategoryChips(cat) {
+  const chips = document.querySelectorAll(".cat-chip");
+  chips.forEach(chip => {
+    if (chip.getAttribute("data-cat") === cat) {
+      chip.classList.add("active");
+    } else {
+      chip.classList.remove("active");
+    }
+  });
 }
 
 // --- Event Listeners Setup ---
@@ -533,6 +709,32 @@ function setupEventListeners() {
   regionSelect.addEventListener("change", applyFilters);
   categorySelect.addEventListener("change", applyFilters);
   sortSelect.addEventListener("change", applyFilters);
+
+  // Category Chips
+  document.querySelectorAll(".cat-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".cat-chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      const cat = chip.getAttribute("data-cat");
+      categorySelect.value = cat;
+      applyFilters();
+    });
+  });
+
+  // Mobile Filters Toggle Button
+  const toggleFiltersBtn = document.getElementById("toggle-filters-btn");
+  if (toggleFiltersBtn) {
+    toggleFiltersBtn.addEventListener("click", () => {
+      const filters = document.getElementById("collapsible-filters");
+      if (filters) filters.classList.toggle("expanded");
+    });
+  }
+
+  // Mobile Floating View Switcher Button
+  const mobileToggle = document.getElementById("mobile-view-toggle");
+  if (mobileToggle) {
+    mobileToggle.addEventListener("click", toggleMobileView);
+  }
 
   // Distance Slider
   distanceSlider.addEventListener("input", (e) => {
@@ -600,6 +802,18 @@ function setupEventListeners() {
     });
   });
 
+  // Custom Origin Search
+  const searchOriginBtn = document.getElementById("search-origin-btn");
+  if (searchOriginBtn) {
+    searchOriginBtn.addEventListener("click", handleCustomOriginSearch);
+  }
+  const customOriginInput = document.getElementById("custom-origin-input");
+  if (customOriginInput) {
+    customOriginInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") handleCustomOriginSearch();
+    });
+  }
+
   // Geolocation
   document.getElementById("geolocate-btn").addEventListener("click", () => {
     if ("geolocation" in navigator) {
@@ -660,6 +874,8 @@ async function initApp() {
     statTotal.textContent = allSites.length;
 
     // 2. Compute distances
+    originDisplay.textContent = currentOrigin.name;
+    updateSortOptionLabels();
     recomputeDistances();
 
     // 3. Populate region choices
