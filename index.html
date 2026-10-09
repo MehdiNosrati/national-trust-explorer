@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>National Trust Explorer | 670+ Sites & Driving Times from Stevenage</title>
+  <link rel="icon" href="https://static.nationaltrust.org.uk/nt-front-end/images/favicon-32x32.png" type="image/png">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <!-- Leaflet MarkerCluster CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar (Brand, Origin Selector, Live Stats & View Modes) -->
+  <header class="top-nav-bar">
+    <div class="top-nav-inner">
+      <div class="nav-left">
+        <div class="brand-chip" title="National Trust Explorer">
+          <span class="brand-chip-icon">🏛️</span>
+          <span class="brand-chip-title">National Trust Explorer</span>
+        </div>
+        <div class="origin-badge">
+          <span>📍 Origin: <strong id="origin-name-display">Stevenage, Herts</strong></span>
+          <button id="change-origin-btn" class="origin-btn" title="Change starting location">Change</button>
+        </div>
+      </div>
+
+      <div class="stat-pills">
+        <div class="stat-pill">Total: <strong id="stat-total-sites">678</strong></div>
+        <div class="stat-pill">Matching: <strong id="stat-showing-sites">678</strong></div>
+        <div class="stat-pill">Under 30m drive: <strong id="stat-under-30m">0</strong></div>
+        <div class="stat-pill">Under 1h drive: <strong id="stat-under-1h">0</strong></div>
+      </div>
+
+      <div class="view-controls">
+        <button class="view-btn active" data-view="split" title="Split Screen View">🗺️ Split View</button>
+        <button class="view-btn" data-view="cards" title="List View Only">📋 Cards Only</button>
+        <button class="view-btn" data-view="map" title="Full Map View">🌍 Full Map</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Filter Toolbar -->
+  <section class="filter-toolbar">
+    <div class="toolbar-inner">
+      <!-- Search & Primary Selects -->
+      <div class="filter-row-primary">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="Search site name, region, keyword, castle..." autocomplete="off">
+          <button id="clear-search" class="clear-search-btn">✕</button>
+        </div>
+        <div>
+          <select id="region-select" class="select-control">
+            <option value="">All Regions (UK-wide)</option>
+          </select>
+        </div>
+        <div>
+          <select id="category-select" class="select-control">
+            <option value="">All Categories</option>
+            <option value="Historic House & Estate">🏛️ Historic Houses & Estates</option>
+            <option value="Castle & Fort">🏰 Castles & Forts</option>
+            <option value="Gardens & Parkland">🌸 Gardens & Parkland</option>
+            <option value="Coast & Beaches">🌊 Coast & Beaches</option>
+            <option value="Countryside & Nature Reserve">🌲 Countryside & Reserves</option>
+            <option value="Abbey & Historic Site">⛪ Abbeys & Historic Sites</option>
+            <option value="Mill & Industrial Heritage">⚙️ Industrial & Mills</option>
+          </select>
+        </div>
+        <div>
+          <select id="sort-select" class="select-control">
+            <option value="nearest">🚗 Nearest to Stevenage</option>
+            <option value="time">⏱️ Shortest Travel Time</option>
+            <option value="name_asc">🔤 Name (A → Z)</option>
+            <option value="name_desc">🔤 Name (Z → A)</option>
+            <option value="region">📍 By Region</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Distance Presets & Slider -->
+      <div class="distance-row">
+        <span>Max Distance:</span>
+        <div class="distance-presets">
+          <button class="dist-btn" data-dist="15">Under 15 mi</button>
+          <button class="dist-btn" data-dist="30">Under 30 mi</button>
+          <button class="dist-btn" data-dist="60">Under 60 mi</button>
+          <button class="dist-btn" data-dist="100">Under 100 mi</button>
+          <button class="dist-btn active" data-dist="all">All UK</button>
+        </div>
+        <div class="distance-slider-wrap">
+          <input type="range" id="distance-slider" min="5" max="350" value="350" step="5">
+          <span class="dist-val-badge" id="dist-slider-val">All UK (350+ mi)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Split Layout -->
+  <main class="app-container split-view" id="main-container">
+    <!-- List / Cards Pane -->
+    <div class="list-pane">
+      <div class="results-meta">
+        <span id="results-count-text">Showing 678 National Trust places</span>
+        <span id="results-sort-text">Sorted by nearest to Stevenage</span>
+      </div>
+      <div class="cards-grid" id="cards-grid">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Map Pane -->
+    <div class="map-pane">
+      <div id="map"></div>
+    </div>
+  </main>
+
+  <!-- Place Detail Modal -->
+  <div class="modal-overlay" id="detail-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <div class="badges-group" style="margin-bottom: 0.35rem;">
+            <span class="badge badge-category" id="modal-cat">Historic House</span>
+            <span class="badge badge-region" id="modal-region">Region</span>
+            <span class="badge badge-id" id="modal-id">NT #123</span>
+          </div>
+          <h2 class="site-name" id="modal-title" style="font-size: 1.4rem;">Property Name</h2>
+        </div>
+        <button class="close-modal-btn" id="close-modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Drive Hero Banner -->
+        <div class="drive-hero-box">
+          <div>
+            <div class="drive-hero-title">🚗 Estimated Drive from Stevenage</div>
+            <div class="drive-hero-stats" id="modal-drive-stats">14.2 miles • ~28 mins</div>
+          </div>
+          <a href="#" target="_blank" rel="noopener noreferrer" class="btn-card btn-primary" id="modal-nav-btn" style="flex: none; padding: 0.6rem 1rem;">
+            🧭 Start Turn-by-Turn Navigation
+          </a>
+        </div>
+
+        <!-- Opening Times -->
+        <div class="info-section">
+          <div class="info-section-title">🕒 Opening Times & Visiting Guidance</div>
+          <div class="info-box">
+            <p id="modal-opening-text">Open daily. Hours vary seasonally.</p>
+            <div style="margin-top: 0.5rem;">
+              <a href="#" target="_blank" rel="noopener noreferrer" id="modal-live-schedule" style="color: var(--nt-green); font-weight: 600; text-decoration: underline;">
+                📅 View live daily timetable on nationaltrust.org.uk &rarr;
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Facilities & Amenities -->
+        <div class="info-section">
+          <div class="info-section-title">✨ Key Facilities & Amenities</div>
+          <div class="facilities-preview" id="modal-facilities" style="gap: 0.5rem;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Location & Coordinates -->
+        <div class="info-section">
+          <div class="info-section-title">📍 Location Details</div>
+          <div class="info-box" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <strong>GPS Coordinates:</strong>
+              <div id="modal-coords" style="font-family: monospace; color: var(--text-primary); margin-top: 2px;">51.9038, -0.1974</div>
+            </div>
+            <div>
+              <strong>Attribution:</strong>
+              <div id="modal-source" style="color: var(--text-muted); font-size: 0.8rem;">National Trust Open Data</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <a href="#" target="_blank" rel="noopener noreferrer" class="btn-card btn-primary" id="modal-official-link">
+          🔗 Visit Official National Trust Page
+        </a>
+        <button class="btn-card btn-secondary" id="modal-close-footer-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Origin Location Modal -->
+  <div class="modal-overlay" id="origin-modal">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 style="font-family: var(--font-serif); font-size: 1.25rem;">Change Starting Location</h3>
+        <button class="close-modal-btn" id="close-origin-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.88rem; color: var(--text-secondary);">
+          Choose your departure town or use your current location to update driving distances and travel times.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.5rem;">
+          <button class="btn-card btn-outline origin-choice-btn" data-lat="51.9038" data-lon="-0.1974" data-name="Stevenage, Herts">
+            📍 Stevenage, Hertfordshire (Default)
+          </button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="51.5074" data-lon="-0.1278" data-name="Central London">
+            📍 Central London
+          </button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="52.2053" data-lon="0.1218" data-name="Cambridge">
+            📍 Cambridge
+          </button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="51.7520" data-lon="-1.2577" data-name="Oxford">
+            📍 Oxford
+          </button>
+          <button class="btn-card btn-secondary origin-choice-btn" data-lat="52.4862" data-lon="-1.8904" data-name="Birmingham">
+            📍 Birmingham
+          </button>
+          <button class="btn-card btn-secondary" id="geolocate-btn" style="margin-top: 0.5rem;">
+            🎯 Use My Current GPS Location
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Leaflet MarkerCluster JS -->
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+  <!-- Data Script -->
+  <script src="data.js"></script>
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>
