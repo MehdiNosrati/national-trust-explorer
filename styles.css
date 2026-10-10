@@ -28,6 +28,18 @@
   padding: 0;
 }
 
+button,
+input,
+select,
+.btn-card,
+.origin-btn,
+.view-btn,
+.dist-btn,
+.cat-chip,
+.close-modal-btn {
+  touch-action: manipulation;
+}
+
 html, body {
   height: 100%;
   max-height: 100vh;
@@ -931,13 +943,14 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.72);
   z-index: 2000;
   display: none;
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  contain: paint;
+  will-change: opacity;
 }
 
 .modal-overlay.active {
@@ -956,6 +969,7 @@ body {
   flex-direction: column;
   position: relative;
   animation: modalEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
 }
 
 @keyframes modalEnter {

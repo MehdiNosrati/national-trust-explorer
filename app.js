@@ -261,6 +261,7 @@ function updateMapMarkers() {
   markerMap.clear();
 
   const bounds = [];
+  const markersToCluster = [];
 
   filteredSites.forEach(s => {
     if (s.latitude && s.longitude) {
@@ -295,11 +296,16 @@ function updateMapMarkers() {
         highlightCard(s.id || s.slug);
       });
 
-      clusterGroup.addLayer(marker);
+      markersToCluster.push(marker);
       markerMap.set(s.id || s.slug, marker);
       bounds.push([s.latitude, s.longitude]);
     }
   });
+
+  // Batch add markers in a single pass to eliminate main thread blocking
+  if (markersToCluster.length > 0) {
+    clusterGroup.addLayers(markersToCluster);
+  }
 
   if (bounds.length > 0 && filteredSites.length < allSites.length) {
     map.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
